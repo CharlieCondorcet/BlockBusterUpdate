@@ -9,6 +9,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using Blockbuster.Data; 
+using Microsoft.EntityFrameworkCore; 
+
 namespace BlockbusterUpdate
 {
     public class Startup
@@ -24,6 +27,9 @@ namespace BlockbusterUpdate
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+
+            services.AddDbContext<BlockbusterContext>(options=>
+            options.UseSqlite(Configuration.GetConnectionString("MovieContext"))); 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
