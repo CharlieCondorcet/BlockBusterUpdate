@@ -9,35 +9,49 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using Blockbuster.Data; 
-using Microsoft.EntityFrameworkCore; 
+using Blockbuster.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlockbusterUpdate
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
+            Environment = env;
             Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
 
+        public IWebHostEnvironment Environment { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages();
+            if (Environment.IsDevelopment())
+            {
+                services.AddDbContext<BlockbusterContext>(options =>
+                options.UseSqlite(
+                    Configuration.GetConnectionString("MovieContext")));
+            }
+            else
+            {
+                services.AddDbContext<BlockbusterContext>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("MovieContext")));
+            }
 
-            services.AddDbContext<BlockbusterContext>(options=>
-            options.UseSqlite(Configuration.GetConnectionString("MovieContext"))); 
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)
         {
-            if (env.IsDevelopment())
+            if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
             }
             else
             {
@@ -50,8 +64,6 @@ namespace BlockbusterUpdate
             app.UseStaticFiles();
 
             app.UseRouting();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
